@@ -1,30 +1,29 @@
 /*
  * IronJacamar, a Java EE Connector Architecture implementation
- * Copyright 2011, Red Hat Inc, and individual contributors
+ * Copyright 2016, Red Hat Inc, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * under the terms of the Eclipse Public License 1.0 as
+ * published by the Free Software Foundation.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the Eclipse
+ * Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
+ * You should have received a copy of the Eclipse Public License
+ * along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.jca.as.rarinfo;
+package org.ironjacamar.as.rarinfo;
 
-import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
-import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
-import org.jboss.jca.common.metadata.resourceadapter.ActivationImpl;
+import org.ironjacamar.common.api.metadata.common.TransactionSupportEnum;
+import org.ironjacamar.common.api.metadata.resourceadapter.AdminObject;
+import org.ironjacamar.common.api.metadata.resourceadapter.ConnectionDefinition;
+import org.ironjacamar.common.metadata.resourceadapter.ActivationImpl;
 
 import java.util.List;
 import java.util.Map;
@@ -72,7 +71,7 @@ public class RaImpl
    public void buildResourceAdapterImpl()  throws Exception
    {
       raImpl = new ActivationImpl(null, rarName, transactionSupport, connectionDefinitions, adminObjects,
-                                  raConfigProperties, null, null, null);
+                                  raConfigProperties, null, null, null, null);
    }
    
    @Override

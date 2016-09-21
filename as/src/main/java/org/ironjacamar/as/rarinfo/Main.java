@@ -1,52 +1,53 @@
 /*
  * IronJacamar, a Java EE Connector Architecture implementation
- * Copyright 2011, Red Hat Inc, and individual contributors
+ * Copyright 2016, Red Hat Inc, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ * under the terms of the Eclipse Public License 1.0 as
+ * published by the Free Software Foundation.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the Eclipse
+ * Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
+ * You should have received a copy of the Eclipse Public License
+ * along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.jca.as.rarinfo;
 
-import org.jboss.jca.common.annotations.Annotations;
-import org.jboss.jca.common.api.metadata.Defaults;
-import org.jboss.jca.common.api.metadata.common.Pool;
-import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
-import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
-import org.jboss.jca.common.api.metadata.spec.ConfigProperty;
-import org.jboss.jca.common.api.metadata.spec.Connector;
-import org.jboss.jca.common.api.metadata.spec.Connector.Version;
-import org.jboss.jca.common.api.metadata.spec.MessageListener;
-import org.jboss.jca.common.api.metadata.spec.RequiredConfigProperty;
-import org.jboss.jca.common.api.metadata.spec.ResourceAdapter;
-import org.jboss.jca.common.api.metadata.spec.XsdString;
-import org.jboss.jca.common.metadata.common.CredentialImpl;
-import org.jboss.jca.common.metadata.common.PoolImpl;
-import org.jboss.jca.common.metadata.common.SecurityImpl;
-import org.jboss.jca.common.metadata.common.XaPoolImpl;
-import org.jboss.jca.common.metadata.resourceadapter.AdminObjectImpl;
-import org.jboss.jca.common.metadata.resourceadapter.ConnectionDefinitionImpl;
-import org.jboss.jca.common.metadata.spec.RaParser;
-import org.jboss.jca.common.spi.annotations.repository.AnnotationRepository;
-import org.jboss.jca.common.spi.annotations.repository.AnnotationScanner;
-import org.jboss.jca.common.spi.annotations.repository.AnnotationScannerFactory;
-import org.jboss.jca.core.util.Injection;
-import org.jboss.jca.validator.Validation;
+package org.ironjacamar.as.rarinfo;
+
+import org.ironjacamar.common.annotations.Annotations;
+import org.ironjacamar.common.api.metadata.Defaults;
+import org.ironjacamar.common.api.metadata.common.Pool;
+import org.ironjacamar.common.api.metadata.common.Recovery;
+import org.ironjacamar.common.api.metadata.common.TransactionSupportEnum;
+import org.ironjacamar.common.api.metadata.resourceadapter.AdminObject;
+import org.ironjacamar.common.api.metadata.resourceadapter.ConnectionDefinition;
+import org.ironjacamar.common.api.metadata.spec.ConfigProperty;
+import org.ironjacamar.common.api.metadata.spec.Connector;
+import org.ironjacamar.common.api.metadata.spec.Connector.Version;
+import org.ironjacamar.common.api.metadata.spec.MessageListener;
+import org.ironjacamar.common.api.metadata.spec.RequiredConfigProperty;
+import org.ironjacamar.common.api.metadata.spec.ResourceAdapter;
+import org.ironjacamar.common.api.metadata.spec.XsdString;
+import org.ironjacamar.common.metadata.common.CredentialImpl;
+import org.ironjacamar.common.metadata.common.PoolImpl;
+import org.ironjacamar.common.metadata.common.RecoveryImpl;
+import org.ironjacamar.common.metadata.common.SecurityImpl;
+import org.ironjacamar.common.metadata.common.XaPoolImpl;
+import org.ironjacamar.common.metadata.resourceadapter.AdminObjectImpl;
+import org.ironjacamar.common.metadata.resourceadapter.ConnectionDefinitionImpl;
+import org.ironjacamar.common.metadata.spec.RaParser;
+import org.ironjacamar.common.spi.annotations.repository.AnnotationRepository;
+import org.ironjacamar.common.spi.annotations.repository.AnnotationScanner;
+import org.ironjacamar.common.spi.annotations.repository.AnnotationScannerFactory;
+import org.ironjacamar.core.util.Injection;
+import org.ironjacamar.validator.Validation;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -89,6 +90,8 @@ import javax.resource.spi.ManagedConnectionFactory;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -106,6 +109,7 @@ import org.xml.sax.SAXException;
  * rar info main class
  * 
  * @author Jeff Zhang
+ * @author Flavia Rainone
  */
 public class Main
 {
@@ -131,7 +135,7 @@ public class Main
    
    static
    {
-      validTypes = new HashSet<Class<?>>();
+      validTypes = new HashSet<>();
 
       validTypes.add(boolean.class);
       validTypes.add(Boolean.class);
@@ -168,7 +172,7 @@ public class Main
                   if (fileName.endsWith(".a") || fileName.endsWith(".so") || fileName.endsWith(".dll"))
                   {
                      if (libs == null)
-                        libs = new ArrayList<String>();
+                        libs = new ArrayList<>();
 
                      libs.add(f.getAbsolutePath());
                   }
@@ -206,59 +210,73 @@ public class Main
    public static void main(String[] args)
    {
       final int argsLength = args.length;
+      if (argsLength < 1)
+      {
+         usage();
+         System.exit(OTHER);
+      }
+      String rarFile = "";
+      String[] cps = null;
+      boolean stdout = false;
+      String reportFile = "";
+
+      for (int i = 0; i < argsLength; i++)
+      {
+         String arg = args[i];
+         if (arg.equals(ARGS_CP))
+         {
+            cps = args[++i].split(System.getProperty("path.separator"));
+         }
+         else if (arg.equals(ARGS_STDOUT))
+         {
+            stdout = true;
+         }
+         else if (arg.equals(ARGS_OUT))
+         {
+            reportFile = args[++i];
+         }
+         else if (arg.endsWith("rar"))
+         {
+            rarFile = arg;
+         }
+         else
+         {
+            usage();
+            System.exit(OTHER);
+         }
+      }
+      rarInfo(rarFile, cps, stdout, reportFile);
+   }
+
+   /**
+    * Runs the rar info tool.
+    *
+    * @param rarFile      the name of the rar file
+    * @param cps          the class path necessary for loading rarFile, if any
+    * @param stdout       indicates whether the output should be printed in System.out
+    * @param reportFile   the name of a report file, in case the output will be printed in System.out
+    */
+   // TODO refactor
+   static void rarInfo(String rarFile, String[] cps, boolean stdout, String reportFile)
+   {
       PrintStream error = null;
       PrintStream out = null;
       ZipFile zipFile = null;
       URLClassLoader cl = null;
       try
       {
-         if (argsLength < 1)
-         {
-            usage();
-            System.exit(OTHER);
-         }
-         String rarFile = "";
-         String[] cps = null;
-         boolean stdout = false;
-         String reportFile = "";
-         
-         for (int i = 0; i < argsLength; i++)
-         {
-            String arg = args[i];
-            if (arg.equals(ARGS_CP))
-            {
-               cps = args[++i].split(System.getProperty("path.separator"));
-            }
-            else if (arg.equals(ARGS_STDOUT))
-            {
-               stdout = true;
-            }
-            else if (arg.equals(ARGS_OUT))
-            {
-               reportFile = args[++i];
-            }
-            else if (arg.endsWith("rar"))
-            {
-               rarFile = arg;
-            }
-            else
-            {
-               usage();
-               System.exit(OTHER);
-            }
-         }
          zipFile = new ZipFile(rarFile);
 
          boolean existNativeFile = false;
          Connector connector = null;
 
-         ArrayList<String> names = new ArrayList<String>();
-         ArrayList<String> xmls = new ArrayList<String>();
+         ArrayList<String> names = new ArrayList<>();
+         ArrayList<String> xmls = new ArrayList<>();
          Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
 
          while (zipEntries.hasMoreElements())
          {
-            ZipEntry ze = (ZipEntry) zipEntries.nextElement();
+            ZipEntry ze = zipEntries.nextElement();
             String name = ze.getName();
             names.add(name);
             
@@ -271,8 +289,9 @@ public class Main
             if (name.equals(RAXML_FILE))
             {
                InputStream raIn = zipFile.getInputStream(ze);
+               XMLStreamReader raXsr = XMLInputFactory.newInstance().createXMLStreamReader(raIn);
                RaParser parser = new RaParser();
-               connector = parser.parse(raIn);
+               connector = parser.parse(raXsr);
                raIn.close();
 
             }
@@ -422,14 +441,13 @@ public class Main
          List<AdminObject> adminObjects = null;
          List<ConnectionDefinition> connDefs = null;
 
-         SecurityImpl secImpl = new SecurityImpl("", "", true);
-         PoolImpl poolImpl = new PoolImpl(0, null, 10, Defaults.PREFILL, Defaults.USE_STRICT_MIN, 
-                                          Defaults.FLUSH_STRATEGY, null);
-         XaPoolImpl xaPoolImpl = new XaPoolImpl(0, null, 10, Defaults.PREFILL, Defaults.USE_STRICT_MIN, 
-                                                Defaults.FLUSH_STRATEGY, null, Defaults.IS_SAME_RM_OVERRIDE,
-                                                Defaults.INTERLEAVING,
-                                                Defaults.PAD_XID, Defaults.WRAP_XA_RESOURCE,
-                                                Defaults.NO_TX_SEPARATE_POOL);
+         SecurityImpl secImpl = new SecurityImpl("", null); //, "", true);
+         PoolImpl poolImpl = new PoolImpl(Defaults.TYPE, Defaults.JANITOR, Defaults.MIN_POOL_SIZE,
+               Defaults.INITIAL_POOL_SIZE, Defaults.MAX_POOL_SIZE, Defaults.PREFILL, Defaults.FLUSH_STRATEGY, null,
+               null);
+         XaPoolImpl xaPoolImpl = new XaPoolImpl(Defaults.TYPE, Defaults.JANITOR, Defaults.MIN_POOL_SIZE,
+               Defaults.INITIAL_POOL_SIZE, Defaults.MAX_POOL_SIZE, Defaults.PREFILL, Defaults.FLUSH_STRATEGY, null,
+               Defaults.IS_SAME_RM_OVERRIDE, Defaults.PAD_XID, Defaults.WRAP_XA_RESOURCE, null);
 
          Map<String, String> introspected;
             
@@ -444,7 +462,7 @@ public class Main
 
             if (ra.getConfigProperties() != null)
             {
-               raConfigProperties = new HashMap<String, String>();
+               raConfigProperties = new HashMap<>();
                for (ConfigProperty cp : ra.getConfigProperties())
                {
                   raConfigProperties.put(getValueString(cp.getConfigPropertyName()),
@@ -487,8 +505,9 @@ public class Main
                connDefs = new ArrayList<ConnectionDefinition>();
                
             transSupport = ra.getOutboundResourceadapter().getTransactionSupport();
-            for (org.jboss.jca.common.api.metadata.spec.ConnectionDefinition mcf :
-                    ra.getOutboundResourceadapter().getConnectionDefinitions())
+            // FIXME once this is right, delete this comment
+            for (org.ironjacamar.common.api.metadata.spec.ConnectionDefinition mcf :
+                  ra.getOutboundResourceadapter().getConnectionDefinitions())
             {
                mcfClassName = getValueString(mcf.getManagedConnectionFactoryClass());
                if (!sameClassnameSet.contains(mcfClassName))
@@ -569,21 +588,18 @@ public class Main
                if (transSupport.equals(TransactionSupportEnum.XATransaction))
                {
                   pool = xaPoolImpl;
-                  Recovery recovery = new Recovery(new CredentialImpl(null, null, "domain"), null, false);
+                  Recovery recovery = new RecoveryImpl(new CredentialImpl("domain", null), null, false, null);
                   connImpl = new ConnectionDefinitionImpl(configProperty, mcfClassName, "java:jboss/eis/" + poolName,
-                                                          poolName, Defaults.ENABLED, Defaults.USE_JAVA_CONTEXT,
-                                                          Defaults.USE_CCM, Defaults.SHARABLE, Defaults.ENLISTMENT,
-                                                          Defaults.CONNECTABLE, Defaults.TRACKING, pool, null, null,
-                                                          secImpl, recovery, Boolean.TRUE);
+                        poolName, Defaults.ENABLED, Defaults.USE_CCM, Defaults.SHARABLE, Defaults.ENLISTMENT,
+                        Defaults.CONNECTABLE, Defaults.TRACKING, pool, null, null, secImpl, recovery, Boolean.TRUE,
+                        null);
                }
                else
                {
                   pool = poolImpl;
                   connImpl = new ConnectionDefinitionImpl(configProperty, mcfClassName, "java:jboss/eis/" + poolName,
-                                                          poolName, Defaults.ENABLED, Defaults.USE_JAVA_CONTEXT,
-                                                          Defaults.USE_CCM, Defaults.SHARABLE, Defaults.ENLISTMENT,
-                                                          Defaults.CONNECTABLE, Defaults.TRACKING, pool, null, null,
-                                                          secImpl, null, Boolean.FALSE);
+                        poolName, Defaults.ENABLED, Defaults.USE_CCM, Defaults.SHARABLE, Defaults.ENLISTMENT,
+                        Defaults.CONNECTABLE, Defaults.TRACKING, pool, null, null, secImpl, null, Boolean.FALSE, null);
                }
                
                connDefs.add(connImpl);
@@ -601,7 +617,7 @@ public class Main
             out.println("-------------");
             adminObjects = new ArrayList<AdminObject>();
 
-            for (org.jboss.jca.common.api.metadata.spec.AdminObject ao : ra.getAdminObjects())
+            for (org.ironjacamar.common.api.metadata.spec.AdminObject ao : ra.getAdminObjects())
             {
                String aoClassname = getValueString(ao.getAdminobjectClass());
                if (!sameClassnameSet.contains(aoClassname))
@@ -661,7 +677,7 @@ public class Main
                }
 
                AdminObjectImpl aoImpl = new AdminObjectImpl(configProperty, aoClassname,
-                  "java:jboss/eis/ao/" + poolName, poolName, Defaults.ENABLED, Defaults.USE_JAVA_CONTEXT);
+                  "java:jboss/eis/ao/" + poolName, poolName, Defaults.ENABLED, null);
                adminObjects.add(aoImpl);
             }
          }
@@ -677,7 +693,7 @@ public class Main
             out.println();
             out.println("Activation-spec:");
             out.println("----------------");
-            for (MessageListener ml : 
+            for (MessageListener ml :
                     ra.getInboundResourceadapter().getMessageadapter().getMessagelisteners())
             {
                String asClassname = getValueString(ml.getActivationspec().getActivationspecClass());
@@ -726,7 +742,7 @@ public class Main
          RaImpl raImpl = new RaImpl(archiveFile, transSupport, connDefs, adminObjects, raConfigProperties);
          raImpl.buildResourceAdapterImpl();
 
-         outputMenifest("META-INF/MANIFEST.MF", out);
+         outputManifest("META-INF/MANIFEST.MF", out);
          
          outputXmlDesc(xmls, out);
 
@@ -829,7 +845,8 @@ public class Main
     * @param classname classname
     * @param cl classloader
     */
-   private static void hasValidatingMcfInterface(PrintStream out, PrintStream error, String classname, URLClassLoader cl)
+   private static void hasValidatingMcfInterface(PrintStream out, PrintStream error, String classname,
+         URLClassLoader cl)
    {
       try
       {
@@ -861,7 +878,8 @@ public class Main
     * @param classname classname
     * @param cl classloader
     */
-   private static void hasResourceAdapterAssociation(PrintStream out, PrintStream error, String classname, URLClassLoader cl)
+   private static void hasResourceAdapterAssociation(PrintStream out, PrintStream error, String classname,
+         URLClassLoader cl)
    {
       try
       {
@@ -919,8 +937,8 @@ public class Main
       }
    }
 
-   private static void hasDissociatableMcInterface(PrintStream out, PrintStream error, String classname, URLClassLoader cl, 
-         List<? extends ConfigProperty> listConfProp)
+   private static void hasDissociatableMcInterface(PrintStream out, PrintStream error, String classname,
+         URLClassLoader cl, List<? extends ConfigProperty> listConfProp)
    {
       hasMcInterface(out, error, classname, cl, listConfProp, "DissociatableManagedConnection", "Sharable");
    }
@@ -941,7 +959,7 @@ public class Main
          Class<?> mcfClz = Class.forName(classname, true, cl);
          ManagedConnectionFactory mcf = (ManagedConnectionFactory)mcfClz.newInstance();
          
-         Injection injector = new Injection(); 
+         Injection injector = new Injection();
          for (ConfigProperty cp : listConfProp)
          {
             if (!XsdString.isNull(cp.getConfigPropertyValue()))
@@ -950,8 +968,9 @@ public class Main
                   cp.getConfigPropertyValue().getValue(), cp.getConfigPropertyType().getValue());
             }
          }
-         
-         mcClz = mcf.createManagedConnection(null, null); 
+
+         // FIXME Flavia
+         //mcClz = mcf.createManagedConnection(null, null);
 
          if (hasInterface(mcClz.getClass(), "javax.resource.spi." + mcClassName))
          {
@@ -984,17 +1003,9 @@ public class Main
       }
    }
    
-   private static void outputMenifest(String meniFile, PrintStream out) throws FileNotFoundException, IOException
+   private static void outputManifest(String manifestFile, PrintStream out) throws FileNotFoundException, IOException
    {
-      out.println();
-      out.println(meniFile + ":");
-      for (int i = 0; i <= meniFile.length(); i++)
-      {
-         out.print("-");
-      }
-      out.println();
-
-      outToFile(meniFile, out);
+      outToFile(manifestFile, out);
 
    }
    
@@ -1002,24 +1013,32 @@ public class Main
    {
       for (String xmlfile : xmls)
       {
-         out.println();
+         /*out.println();
          out.println(xmlfile + ":");
          for (int i = 0; i <= xmlfile.length(); i++)
          {
             out.print("-");
          }
-         out.println();
+         out.println();*/
          
          outToFile(xmlfile, out);
       }
    }
 
-   private static void outToFile(String fileName, PrintStream out) throws FileNotFoundException, IOException
+   private static void outToFile(String fileName, PrintStream out) throws IOException
    {
       Reader in = null;
       try
       {
          in = new FileReader(root.getAbsolutePath() + File.separator + fileName);
+
+         out.println();
+         out.println(fileName + ":");
+         for (int i = 0; i <= fileName.length(); i++)
+         {
+            out.print("-");
+         }
+         out.println();
 
          char[] buffer = new char[4096];
          for (;;)
@@ -1036,6 +1055,10 @@ public class Main
          }
          out.flush();
       }
+      catch (FileNotFoundException e)
+      {
+         // ignore
+      }
       finally
       {
          try
@@ -1050,7 +1073,8 @@ public class Main
       }
    }
    
-   private static void printCCIInfo(org.jboss.jca.common.api.metadata.spec.ConnectionDefinition connectionDefinition, String mcfClassName, URLClassLoader cl, PrintStream out, PrintStream error)
+   private static void printCCIInfo(org.ironjacamar.common.api.metadata.spec.ConnectionDefinition connectionDefinition,
+         String mcfClassName, URLClassLoader cl, PrintStream out, PrintStream error)
    { 
       Class<?> cfiClazz = null;
       Class<?> ciClazz = null;
