@@ -230,7 +230,14 @@ public class WorkWrapper implements Runnable
       {
          exception = new WorkCompletedException(t.getMessage(), t);
 
-         cancel();
+         try
+         {
+            cancel();
+         }
+         catch (Throwable throwable)
+         {
+            t.printStackTrace();
+         }
       } 
       finally
       {

@@ -21,6 +21,8 @@
 
 package org.ironjacamar.core;
 
+import javax.security.auth.Subject;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
@@ -28,6 +30,7 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 /**
@@ -217,4 +220,47 @@ public interface CoreLogger extends BasicLogger
    @Message(id = 1101, value = "Prepare called on a local tx. Use of local transactions on a JTA " +
          "transaction with more than one branch may result in inconsistent data in some cases of failure")
    public void prepareCalledOnLocaltx();
+
+   // ELYTRON
+
+   /**
+    * Notify that Elytron is handling callbacks.
+    *
+    * @param callbacks callbacks
+    */
+   @LogMessage(level = INFO)
+   @Message(id = 1102, value = "Elytron handler handle: %s")
+   void elytronHandlerHandle(String callbacks);
+
+   /**
+    * Execution subject is missing.
+    *
+    * @return the security exception
+    */
+   @Message(id = 1103, value = "Execution subject was not provided to the callback handler")
+   SecurityException executionSubjectNotSetInHandler();
+
+   /**
+    * Missing callback with security domain info.
+    * @return the unsupported operation exception
+    */
+   @Message(id = 1104, value = "Callback with security domain is required - use createCallbackHandler"
+      + "(Callback callback) instead")
+   UnsupportedOperationException unsupportedCreateCallbackHandlerMethod();
+
+   /**
+    * Callback missing security domain reference.
+    * @return the illegal argument exception
+    */
+   @Message(id = 1105, value = "Supplied callback doesn't contain a security domain reference")
+   IllegalArgumentException invalidCallbackSecurityDomain();
+
+   /**
+    * Message informing about subject and identity.
+    * @param subject  the subject
+    * @param identity the identity
+    * @return the message
+    */
+   @Message(id = 1106, value = "Subject=%s\nSubject identity=%s")
+   String subject(Subject subject, String identity);
 }

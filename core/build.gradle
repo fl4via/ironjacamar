@@ -35,6 +35,12 @@ dependencies {
   compile(libraries.picketbox) {
     transitive = false
   }
+  compile(libraries.wildfly_elytron) {
+    transitive = false
+  }
+  compile(libraries.wildfly_common) {
+    transitive = false
+  }
 
   compile project(':api')
   compile project(':common')
