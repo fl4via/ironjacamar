@@ -642,7 +642,7 @@
        Target: release
        ================================= -->
   <target name="release" depends="clean,sjc">
-    <fail message="IronJacamar distribution requires eclipse.home setting" unless="eclipse.home"/>
+<!--    <fail message="IronJacamar distribution requires eclipse.home setting" unless="eclipse.home"/> -->
 
     <delete dir="${build.dir}"/>
 
