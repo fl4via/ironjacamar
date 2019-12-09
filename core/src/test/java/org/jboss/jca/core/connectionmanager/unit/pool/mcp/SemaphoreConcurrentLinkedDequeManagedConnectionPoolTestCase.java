@@ -23,10 +23,18 @@
 package org.jboss.jca.core.connectionmanager.unit.pool.mcp;
 
 import javax.resource.ResourceException;
+import javax.resource.spi.ConnectionRequestInfo;
 
 import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
+import org.jboss.jca.core.connectionmanager.connections.adapter.TestConnectionRequestInfo;
+import org.jboss.jca.core.connectionmanager.pool.api.Capacity;
+import org.jboss.jca.core.connectionmanager.pool.api.CapacityDecrementer;
+import org.jboss.jca.core.connectionmanager.pool.api.CapacityIncrementer;
 import org.jboss.jca.core.connectionmanager.pool.api.Pool;
+import org.jboss.jca.core.connectionmanager.pool.capacity.ExplicitCapacity;
+import org.jboss.jca.core.connectionmanager.pool.capacity.SizeIncrementer;
+import org.jboss.jca.core.connectionmanager.pool.capacity.WatermarkDecrementer;
 import org.jboss.jca.core.connectionmanager.pool.mcp.SemaphoreConcurrentLinkedDequeManagedConnectionPool;
 import org.jboss.jca.core.connectionmanager.pool.strategy.OnePool;
 import org.junit.Assert;
@@ -72,6 +80,53 @@ public class SemaphoreConcurrentLinkedDequeManagedConnectionPoolTestCase {
 		}
 
 		Assert.assertEquals("Only a single conenction should have been removed", POOL_SIZE - 1, mcp.getActive());
+	}
+
+	@Test
+	public void testIncreaseCapacity() throws Exception {
+		final SizeIncrementer sizeIncrementer = new SizeIncrementer();
+		sizeIncrementer.setSize(4);
+		final WatermarkDecrementer watermarkDecrementer = new WatermarkDecrementer();
+		watermarkDecrementer.setWatermark(1);
+		pool.setCapacity(new ExplicitCapacity(sizeIncrementer, watermarkDecrementer));
+		poolConfig.setPrefill(false);
+		poolConfig.setStrictMin(false);
+		SemaphoreConcurrentLinkedDequeManagedConnectionPool mcp = new SemaphoreConcurrentLinkedDequeManagedConnectionPool();
+		mcp.initialize(mcf, cm, null, null, poolConfig, pool);
+
+		// notice sizeIncrementer.size is 4, but we expect 3 as the final pool size result after increaseCapacity
+		// the reason for this is that increaseCapacity assumes that 1 connection has been created before it is invoked
+		// so it creates n - 1 connections to make it up for that.
+		// the assumption is correct because the connection request info, that triggers increaseCapacity call
+		// is invoked by getConnection method, after a first connection is created.
+		// as a conclusion, for the test purposes, we need to assert that the pool size is 3
+		ConnectionRequestInfo connectionRequestInfo = new TestConnectionRequestInfo();
+		mcp.increaseCapacity(null, connectionRequestInfo);
+      Assert.assertEquals(3, mcp.getActive());
+
+		mcp.increaseCapacity(null, connectionRequestInfo);
+		Assert.assertEquals(5, mcp.getActive());
+
+		mcp.increaseCapacity(null, connectionRequestInfo);
+		Assert.assertEquals(5, mcp.getActive());
+
+		mcp.increaseCapacity(null, connectionRequestInfo);
+		Assert.assertEquals(5, mcp.getActive());
+
+		mcp.increaseCapacity(null, connectionRequestInfo);
+		Assert.assertEquals(5, mcp.getActive());
+	}
+
+	private PoolConfiguration incrementerPoolConfiguration() {
+		PoolConfiguration pc = new PoolConfiguration();
+		pc.setPrefill(false);
+		pc.setStrictMin(false);
+		pc.setMinSize(1);
+		pc.setMaxSize(5);
+		pc.setValidateOnMatch(true);
+		pc.setUseFastFail(true);
+
+		return pc;
 	}
 
 	private PoolConfiguration prefillPoolConfiguration() {
